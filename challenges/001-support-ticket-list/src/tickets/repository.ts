@@ -6,11 +6,16 @@ export class TicketRepository {
 
   constructor(initialTickets: Ticket[]) {
     this.tickets = initialTickets.map((ticket) => ({ ...ticket }));
-    this.nextId = Math.max(100, ...initialTickets.map((ticket) => ticket.id)) + 1;
+    this.nextId =
+      Math.max(100, ...initialTickets.map((ticket) => ticket.id)) + 1;
   }
 
   findAll(): Ticket[] {
     return this.tickets.map((ticket) => ({ ...ticket }));
+  }
+
+  findByName(search?: string): Ticket[] {
+    return this.tickets;
   }
 
   findById(id: number): Ticket | undefined {
@@ -24,7 +29,7 @@ export class TicketRepository {
       title: input.title,
       customerName: input.customerName,
       status: "open",
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     this.tickets.push(ticket);

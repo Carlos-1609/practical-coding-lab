@@ -4,10 +4,78 @@ import type { NewTicket, Ticket, TicketStatus } from "./types.js";
 export class TicketService {
   constructor(private readonly repository: TicketRepository) {}
 
-  listTickets(status?: TicketStatus): Ticket[] {
+  listTickets(
+    page: number,
+    pageSize: number,
+    status?: TicketStatus,
+    search?: string,
+  ) {
+    // Status is empty or not
+    // Seearch no es empty
+    // Search and Status
+    let sorted: Ticket[] = [];
     const tickets = this.repository.findAll();
-    const matching = status ? tickets.filter((ticket) => ticket.status === status) : tickets;
-    return matching.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    let matching = status
+      ? tickets.filter((ticket) => ticket.status === status)
+      : tickets;
+
+    if (search?.trim().length !== 0 && search !== undefined) {
+      const searched = matching.filter((ticket) => {
+        if (
+          ticket.customerName
+            .toLocaleLowerCase()
+            .trim()
+            .includes(search?.trim().toLocaleLowerCase()) ||
+          ticket.title
+            .toLowerCase()
+            .trim()
+            .includes(search?.trim().toLocaleLowerCase())
+        ) {
+          return ticket;
+        }
+      });
+      sorted = [
+        ...searched.sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      ];
+    } else {
+      sorted = [
+        ...matching.sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      ];
+    }
+
+    if (sorted.length === 0) {
+      return {
+        data: [],
+        meta: {
+          page,
+          pageSize,
+          total: 0,
+          totalPages: 0,
+        },
+      };
+    }
+
+    let currTickets: Ticket[] = [];
+    let currPage = 1;
+    let paginatedTickets: Record<number, Ticket[]> = {};
+    for (let i = 0; i < sorted.length; i++) {
+      if (currTickets.length === pageSize) {
+        paginatedTickets = { ...paginatedTickets, [currPage]: currTickets };
+        currTickets = [];
+        currPage++;
+      }
+      currTickets.push(sorted[i]);
+    }
+    if (currTickets.length > 0) {
+      paginatedTickets = { ...paginatedTickets, [currPage]: currTickets };
+    }
+    const meta = {
+      page,
+      pageSize,
+      total: sorted.length,
+      totalPages: currPage,
+    };
+    return { data: page > currPage ? [] : paginatedTickets[page], meta };
   }
 
   getTicket(id: number): Ticket | undefined {
