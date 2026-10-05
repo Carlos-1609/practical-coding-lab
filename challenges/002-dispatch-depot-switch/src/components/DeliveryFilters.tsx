@@ -13,24 +13,29 @@ interface DeliveryFiltersProps {
 const statusOptions: ReadonlyArray<{ value: StatusFilter; label: string }> = [
   { value: "all", label: "All" },
   { value: "pending", label: "Pending" },
-  { value: "delivered", label: "Delivered" }
+  { value: "delivered", label: "Delivered" },
 ];
-
+//
 export function DeliveryFilters({
   depotId,
   onDepotChange,
   status,
   onStatusChange,
   search,
-  onSearchChange
+  onSearchChange,
 }: DeliveryFiltersProps) {
   return (
     <section className="filters" aria-label="Delivery filters">
       <label className="field">
         <span>Depot</span>
-        <select value={depotId} onChange={(event) => onDepotChange(event.target.value as DepotId)}>
+        <select
+          value={depotId}
+          onChange={(event) => onDepotChange(event.target.value as DepotId)}
+        >
           {depots.map((depot) => (
-            <option key={depot.id} value={depot.id}>{depot.name}</option>
+            <option key={depot.id} value={depot.id}>
+              {depot.name}
+            </option>
           ))}
         </select>
       </label>
